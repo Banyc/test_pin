@@ -58,6 +58,12 @@ mod tests {
     fn test_pin() {
         let v = 42;
         let mut sr = SelfRefer::new(v);
+
+        // Force `sr` to be moved
+        let v_ptr = (&mut sr.v) as *mut usize;
+        let mut sr = std::mem::replace(&mut sr, SelfRefer::new(420));
+        assert_eq!(unsafe { v_ptr.read() }, 420);
+
         // SAFETY: `p` drops with `sr` and before that, `sr` never gets unpinned
         let mut p = unsafe { Pin::new_unchecked(&mut sr) };
 
